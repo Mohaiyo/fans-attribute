@@ -1,0 +1,158 @@
+<style lang="less">
+.innerBox{
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  height: 100vh;
+  .label{
+    position: absolute;
+    top:48rpx;
+    left:40rpx;
+    font-family: 'HappyZcool-2016';
+    font-size: 40rpx;
+  }
+  .subjectBox{
+    position: relative;
+    .subPiC{
+      width: 100%;
+      // height: 1000rpx;
+      // margin-top:100rpx;
+    }
+    .descr{
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 320rpx;
+      max-width: 550rpx;
+      font-family: 'HappyZcool-2016';
+      font-size: 60rpx;
+      line-height: 90rpx;
+    }
+    .btn{
+      position: absolute;
+      text-align: center;
+      bottom: 200rpx;
+      height: 210rpx;
+      width: 190rpx;
+      background-color: transparent;
+      outline: none;
+      border: none;
+    }
+    .btn::after{
+      border: none;
+    }
+    .left{
+      left: 95rpx;
+    }
+    .right{
+      right: 95rpx;
+    }
+  }
+
+}
+</style>
+<template>
+  <view class="container">
+    <view wx:for="{{subjectList}}" wx:key="{{index}}" class="innerBox" wx:if="{{index === testIndex}}" style="height:{{height + 'px'}}">
+      <view class="subjectBox" style="height:{{height + 'px'}}">
+        <label class="label">{{index + 1}}/{{subjectLength}}</label>
+        <image src="../assets/images/test.png" style="height:{{height + 'px'}}" class="subPiC"></image>
+        <view class="descr">{{item.question}}</view>
+        <button class="btn left" @tap.prevent="navigateToResult({{item.id}},'no')"></button>
+        <button class="btn right" @tap.prevent="navigateToResult({{item.id}},'yes')"></button>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class test1 extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#0250b5',
+      navigationBarTextStyle: 'white',
+      navigationBarTitleText: '测测你的球迷属性'
+    }
+    components = {
+
+    }
+
+    data = {
+      mynum: 20,
+      hasAuth: false,
+      userInfo: {
+        nickName: '加载中...'
+      },
+      subjectList: [],
+      testIndex: 0,
+      subjectLength: 0,
+      height: 0,
+      result: []
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+      navigateToResult(subId, val) {
+        let self = this
+        switch (val) {
+          case 'yes':
+            this.result = self.subjectList.map(item => {
+              if (item.id === subId) {
+                item.value = val
+                return item
+              } else {
+                return item
+              }
+            })
+            break
+
+          default:
+            this.result = self.subjectList.map(item => {
+              if (item.id === subId) {
+                item.value = val
+                return item
+              } else {
+                return item
+              }
+            })
+            break
+        }
+        if (this.testIndex < this.subjectList.length - 1) {
+          this.testIndex++
+        } else if (this.testIndex === this.subjectLength - 1) {
+          wepy.showLoading({
+            mask: true,
+            title: '结果生成中...'
+          })
+          let url = this.$parent.globalData.server_host + 'quizz/post_answers'
+          wepy.request({url, method: 'POST', data: this.result}).then(res => {
+            self.$preload('result', res.data)
+            wepy.clearStorageSync()
+            wepy.hideLoading()
+            self.$navigate('result')
+          }).catch(err => {
+            console.log(err)
+          })
+        }
+      }
+    }
+
+    events = {
+
+    }
+
+    onLoad() {
+      this.subjectList = wepy.getStorageSync('subject_lists')
+      this.subjectLength = wepy.getStorageSync('subject_lists').length
+      const systemInfo = wepy.getSystemInfoSync()
+      this.height = systemInfo.windowHeight
+    }
+  }
+</script>

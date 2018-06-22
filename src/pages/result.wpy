@@ -1,0 +1,78 @@
+<style lang="less">
+.resultPic{
+  width: 750rpx;
+}
+</style>
+<template>
+  <view class="container">
+    <view>
+      <image src="../assets/images/ansplain.png" class="resultPic" style="height:{{height + 'px'}}"></image>
+    </view>
+    <!-- <image class="userinfo-avatar" src="{{ userInfo.avatarUrl }}" background-size="cover"/>
+    <view class="userinfo-nickname">{{ userInfo.nickName }}</view> -->
+    <!-- <view @tap="share">分享图片</view>
+    <button open-type="share">分享按钮</button> -->
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Result extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#0250b5',
+      navigationBarTextStyle: 'white',
+      navigationBarTitleText: '测测你的球迷属性'
+    }
+    components = {
+
+    }
+
+    data = {
+      mynum: 20,
+      hasAuth: false,
+      userInfo: {
+        nickName: '加载中...'
+      },
+      height: 0
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+      share() {
+        wepy.showActionSheet({
+          itemList: ['A', 'B', 'C'],
+          success: function(res) {
+            console.log(res.tapIndex)
+          },
+          fail: function(res) {
+            console.log(res.errMsg)
+          }
+        })
+      },
+      onShareAppMessage: function (res) {
+        if (res.from === 'button') {
+          // 来自页面内转发按钮
+          console.log(res.target)
+        }
+        return {
+          title: '伪球迷属性指南',
+          path: '/page/result?id=123'
+        }
+      }
+    }
+
+    events = {
+
+    }
+
+    onLoad(params, data) {
+      const systemInfo = wepy.getSystemInfoSync()
+      this.height = systemInfo.windowHeight
+      console.log(data.preload.result)
+    }
+  }
+</script>

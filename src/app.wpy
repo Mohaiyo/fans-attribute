@@ -1,0 +1,115 @@
+<style lang="less">
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+</style>
+
+<script>
+import wepy from 'wepy'
+import 'wepy-async-function'
+
+export default class extends wepy.app {
+  config = {
+    pages: [
+      // 'pages/home',
+      'pages/index',
+      'pages/test',
+      'pages/result'
+    ],
+    window: {
+      backgroundTextStyle: 'light',
+      navigationBarBackgroundColor: '#fff',
+      navigationBarTitleText: 'WeChat',
+      navigationBarTextStyle: 'black'
+    }
+  }
+
+  globalData = {
+    userInfo: null,
+    server_host: 'http://120.79.241.178:9190/',
+    ftp_host: 'https://yan.yanyantech.com/citypos-api/' + 'admin/upload',
+    cache: {},
+    innerAudioContext: null,
+    audioPlay: true
+  }
+
+  constructor () {
+    super()
+    this.use('requestfix')
+    this.use('promisify')
+    this.initHttpConfig()
+  }
+
+  onLaunch() {
+    // this.globalData.innerAudioContext = wepy.createInnerAudioContext()
+    // this.globalData.innerAudioContext.autoplay = true
+    // this.globalData.innerAudioContext.loop = true
+    // this.globalData.innerAudioContext.src = 'http://ws.stream.qqmusic.qq.com/M500001VfvsJ21xFqb.mp3?guid=ffffffff82def4af4b12b3cd9337d5e7&uin=346897220&vkey=6292F51E1E384E061FF02C31F716658E5C81F5594D561F2E88B854E81CAAB7806D5E4F103E55D33C16F3FAC506D1AB172DE8600B37E43FAD&fromtag=46'
+
+    // this.globalData.innerAudioContext.onError((res) => {
+    //   console.log(res.errMsg)
+    //   console.log(res.errCode)
+    // })
+  }
+
+  getUserInfo(cb) {
+    const that = this
+    if (this.globalData.userInfo) {
+      return this.globalData.userInfo
+    }
+    wepy.getUserInfo({
+      success (res) {
+        that.globalData.userInfo = res.userInfo
+        cb && cb(res.userInfo)
+      }
+    })
+  }
+
+  play() {
+    this.globalData.innerAudioContext.play()
+    this.audioPlay = true
+  }
+
+  pause() {
+    this.globalData.innerAudioContext.pause()
+    this.audioPlay = false
+  }
+
+  // 初始化http的拦截器等操作
+  initHttpConfig() {
+    // let self = this
+    this.intercept('request', {
+      // 发出请求时的回调函数
+      config (p) {
+        // 对所有request请求中的OBJECT参数对象统一附加时间戳属性
+        // p.timestamp = +new Date()
+        // console.log('config request: ', p)
+        // 必须返回OBJECT参数对象，否则无法发送请求到服务端
+        return p
+      },
+
+      // 请求成功后的回调函数
+      success (p) {
+        // 可以在这里对收到的响应数据对象进行加工处理
+        console.log('request success: ', p)
+        // 必须返回响应数据对象，否则后续无法对响应数据进行处理
+        return p
+      },
+
+      // 请求失败后的回调函数
+      fail (p) {
+        console.log('request fail: ', p)
+        // 必须返回响应数据对象，否则后续无法对响应数据进行处理
+        return p
+      }
+
+    })
+  }
+}
+</script>

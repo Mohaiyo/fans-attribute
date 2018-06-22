@@ -1,0 +1,152 @@
+<style lang="less">
+  .container{
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    .audio-btn{
+      position: absolute;
+      top: 30rpx;
+      right:30rpx;
+    }
+    .pic-container{
+      // height: 1206rpx;
+      position: relative;
+      width: 100%;
+      .pic{
+        width: 100%;
+        text-align: center;
+        .gif{
+          width:240rpx;
+          height:240rpx;
+          position:absolute;
+          bottom:20rpx;
+          left:50%;
+          transform: translateX(-50%);
+        }
+      }
+      .btn-test{
+        width: 100%;
+        position: absolute;
+        // height: 196rpx;
+        text-align: center;
+        bottom: 380rpx;
+        .btn{
+          width: 408rpx;
+          height:130rpx;
+          background-color: transparent;
+          border-radius: 10rpx;
+          outline: none;
+          border: none;
+        }
+        .btn::after{
+          border: none;
+        }
+      }
+    }
+  }
+
+</style>
+<template>
+  <view class="container" style="height: {{height + 'px'}}">
+    <!-- <view class="audio-btn" wx:if="{{!audioPlay}}" @tap="play">播放</view>
+    <view class="audio-btn" wx:if="{{audioPlay}}" @tap="pause">暂停</view> -->
+    <wxc-flex class="pic-container"  dir="top" main="start" cross="center">
+      <view class="pic">
+        <image src="../assets/images/indexbg.png" style="width:100%;height:{{height + 'px'}}"></image>
+        <image src="../assets/images/indexgif.gif" style="" class="gif"></image>
+      </view>
+      <view class="btn-test">
+        <button wx:if="{{!hasAuth}}" class="btn" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="test"></button>
+        <button wx:if="{{hasAuth}}" class="btn" @tap="test"></button>
+      </view>
+    </wxc-flex>
+    <wxc-toast class="J_toast" text="开始测试之前请允许获取您的个人公开信息"></wxc-toast>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#0250b5',
+      navigationBarTextStyle: 'white',
+      navigationBarTitleText: '测测你的球迷属性',
+      usingComponents: {
+        'wxc-flex': '../../packages/@minui/wxc-flex/dist/index',
+        'wxc-toast': '../../packages/@minui/wxc-toast/dist/index'
+      }
+    }
+    components = {
+
+    }
+
+    // mixins = [testMixin]
+
+    data = {
+      audioPlay: true,
+      height: 0
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+      test(e) {
+        if (e.detail.userInfo) {
+          this.hasAuth = true
+          this.$parent.globalData.userInfo = e.detail.userInfo
+          this.$apply()
+        }
+        if (this.hasAuth) {
+          this.$navigate('test')
+        } else {
+          let $toast = this.$wxpage.selectComponent('.J_toast')
+          $toast && $toast.show()
+        }
+      },
+      play() {
+        this.$parent.play()
+        this.audioPlay = true
+      },
+      pause() {
+        this.$parent.pause()
+        this.audioPlay = false
+      }
+    }
+    getSubjectList() {
+      wepy.showLoading({
+        mask: true,
+        title: '加载中...'
+      })
+      let url = this.$parent.globalData.server_host + '/quizz/get_questions?amount=5'
+      wepy.request(url).then(res => {
+        wepy.hideLoading()
+        wepy.setStorageSync('subject_lists', res.data)
+      }).catch(err => {
+        console.log(err)
+      })
+    }
+
+    onShow() {
+      this.getSubjectList()
+    }
+    onLoad() {
+      // let self = this
+      // this.audioPlay = this.$parent.globalData.audioPlay
+      // this.$parent.getUserInfo(function (userInfo) {
+      //   if (userInfo) {
+      //     self.hasAuth = true
+      //     self.userInfo = userInfo
+      //   }
+      //   self.$apply()
+      // }, function() {
+      //   self.hasAuth = false
+      //   self.$apply()
+      // })
+      const systemInfo = wepy.getSystemInfoSync()
+      this.height = systemInfo.windowHeight
+    }
+  }
+</script>
