@@ -32,26 +32,45 @@
     }
   }
   .Share{
-    width: 60rpx;
-    height: 60rpx;
+    width: 285rpx;
+    height: 85rpx;
     position: absolute;
-    top: 140rpx;
-    right: 30rpx;
+    top: 480rpx;
+    left: 50rpx;
   }
   .back-btn{
-    width: 60rpx;
+    width: 150rpx;
     height: 60rpx;
     position: absolute;
     bottom: 50rpx;
-    left: 80rpx;
+    left: 50rpx;
+    outline: none;
+    border:4rpx solid #fff;
+    border-radius: 8rpx;
+    line-height: 60rpx;
+    color: #000000;
+    padding-left:4px;
+    padding-right:4px;
+    background-color: #fff100;
+    font-family: 'HappyZcool-2016';
+    font-size: 28rpx;
+  }
+  .back-img{
+    width: 150rpx;
+    height: 60rpx;
+    position: absolute;
+    bottom: 50rpx;
+    left: 40rpx;
   }
 </style>
 <template>
   <view class="container">
     <view>
       <image src="{{'data:image/png;base64,' + resultImg}}" mode="aspectFill" class="resultPic" style="height:{{height + 'px'}}"></image>
-      <image src="../assets/images/share.png" mode="aspectFill" class="Share" @tap="showMask"></image>
-      <image src="../assets/images/back.png" mode="aspectFill" class="back-btn" @tap="backIndex"></image>
+      <image src="../assets/images/sharebtn.png" mode="aspectFill" class="Share" @tap="showMask"></image>
+      <image src="../assets/images/restart.png" mode="aspectFill" class="back-img" @tap="backIndex"></image>
+      <!-- <button class="back-btn" @tap="backIndex">再来一次</button> -->
+      <!-- <wxc-button class="back-btn" @tap="backIndex"></wxc-button> -->
     </view>
     <wxc-mask status="{{maskStatus}}" content-align="bl" bind:masktap="maskTap">
       <view class="mask-demo_content">
@@ -89,7 +108,8 @@
     data = {
       height: 0,
       maskStatus: 'hide',
-      resultImg: ''
+      resultImg: '',
+      resultImgUrl: ''
     }
 
     computed = {
@@ -103,8 +123,9 @@
           console.log(res.target)
         }
         return {
-          title: '朋友圈伪球迷大揭发!快来测测你的球迷属性。',
-          path: '/pages/index'
+          title: '史上最搞笑球迷分类大全，准到想嫁给小编！！',
+          path: '/pages/index',
+          imageUrl: this.resultImgUrl
         }
       },
       showMask() {
@@ -115,19 +136,50 @@
       },
       shareToFriends() {
         let self = this
-        let imgUrl = this.resultImg // 图片地址
-        wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
-          url: imgUrl
-        }).then(res => {
-          wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
-            let $toast = self.$wxpage.selectComponent('.J_toast')
-            $toast && $toast.show()
-            self.maskStatus = 'hide'
-            self.$apply()
-          })
+        let imgUrl = this.resultImgUrl // 图片地址
+        // wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
+        //   url: imgUrl
+        // }).then(res => {
+        //   wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
+        //     let $toast = self.$wxpage.selectComponent('.J_toast')
+        //     $toast && $toast.show()
+        //     self.maskStatus = 'hide'
+        //     self.$apply()
+        //   })
+        // })
+
+        wepy.getSetting().then(res => {
+          console.log(res)
+          if (!res.authSetting['scope.writePhotosAlbum']) {
+            wepy.authorize({scope: 'scope.writePhotosAlbum'}).then(res => {
+              console.log(res)
+              wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
+                url: imgUrl
+              }).then(res => {
+                wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
+                  let $toast = self.$wxpage.selectComponent('.J_toast')
+                  $toast && $toast.show()
+                  self.maskStatus = 'hide'
+                  self.$apply()
+                })
+              })
+            })
+          } else {
+            wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
+              url: imgUrl
+            }).then(res => {
+              wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
+                let $toast = self.$wxpage.selectComponent('.J_toast')
+                $toast && $toast.show()
+                self.maskStatus = 'hide'
+                self.$apply()
+              })
+            })
+          }
         })
       },
       backIndex() {
+        wepy.clearStorageSync()
         this.$redirect('index')
       }
 
@@ -183,9 +235,11 @@
     }
 
     onLoad(params, data) {
+      console.log(data.preload)
       const systemInfo = wepy.getSystemInfoSync()
       this.height = systemInfo.windowHeight
       this.resultImg = data.preload.result.data_b64
+      this.resultImgUrl = wepy.getStorageSync('generateUrl')
     }
   }
 </script>

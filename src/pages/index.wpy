@@ -16,8 +16,8 @@
         width: 100%;
         text-align: center;
         .gif{
-          width:240rpx;
-          height:240rpx;
+          width:308rpx;
+          height:308rpx;
           position:absolute;
           bottom:50rpx;
           left:50%;
@@ -52,8 +52,8 @@
     <view class="audio-btn" wx:if="{{audioPlay}}" @tap="pause">暂停</view> -->
     <wxc-flex class="pic-container"  dir="top" main="start" cross="center">
       <view class="pic">
-        <image src="../assets/images/indexbg.png" style="width:100%;height:{{height + 'px'}}"></image>
-        <image src="../assets/images/indexgif.gif" style="" class="gif"></image>
+        <image src="../assets/images/indexbg.png" mode="aspectFill" style="width:100%;height:{{height + 'px'}}"></image>
+        <image src="../assets/images/indexgif.gif" class="gif"></image>
       </view>
       <view class="btn-test">
         <button wx:if="{{!hasAuth}}" class="btn" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="test"></button>
@@ -121,7 +121,7 @@
         mask: true,
         title: '加载中...'
       })
-      let url = this.$parent.globalData.server_host + 'quizz/get_questions?amount=9'
+      let url = this.$parent.globalData.server_host + 'quizz/get_questions?amount=10'
       wepy.request(url).then(res => {
         wepy.hideLoading()
         wepy.setStorageSync('subject_lists', res.data)
