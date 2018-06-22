@@ -132,11 +132,22 @@
             title: '结果生成中...'
           })
           let url = this.$parent.globalData.server_host + 'quizz/post_answers'
-          wepy.request({url, method: 'POST', data: this.result}).then(res => {
+          let postData = {
+            'data': this.result,
+            'nickname': this.$parent.globalData.userInfo.nickName
+          }
+          wepy.request({url, method: 'POST', data: postData}).then(res => {
             self.$preload('result', res.data)
             wepy.clearStorageSync()
             wepy.hideLoading()
             self.$navigate('result')
+          }).catch(err => {
+            console.log(err)
+          })
+          let generateUrl = this.$parent.globalData.server_host + 'quizz/generate_url'
+          wepy.request({generateUrl, method: 'POST', data: postData}).then(res => {
+            self.$preload('urlresult', res.data)
+            console.log('urlresult', res.data)
           }).catch(err => {
             console.log(err)
           })

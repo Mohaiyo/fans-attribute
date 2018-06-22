@@ -5,7 +5,7 @@
     width: 100%;
     .audio-btn{
       position: absolute;
-      top: 30rpx;
+      top: 60rpx;
       right:30rpx;
     }
     .pic-container{
@@ -19,9 +19,9 @@
           width:240rpx;
           height:240rpx;
           position:absolute;
-          bottom:20rpx;
+          bottom:50rpx;
           left:50%;
-          transform: translateX(-50%);
+          transform: translateX(-60%);
         }
       }
       .btn-test{
@@ -95,6 +95,7 @@
     methods = {
       test(e) {
         if (e.detail.userInfo) {
+          console.log(e.detail.userInfo)
           this.hasAuth = true
           this.$parent.globalData.userInfo = e.detail.userInfo
           this.$apply()
@@ -120,7 +121,7 @@
         mask: true,
         title: '加载中...'
       })
-      let url = this.$parent.globalData.server_host + '/quizz/get_questions?amount=5'
+      let url = this.$parent.globalData.server_host + 'quizz/get_questions?amount=9'
       wepy.request(url).then(res => {
         wepy.hideLoading()
         wepy.setStorageSync('subject_lists', res.data)
