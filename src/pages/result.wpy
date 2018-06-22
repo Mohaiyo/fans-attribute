@@ -36,7 +36,7 @@
     height: 85rpx;
     position: absolute;
     top: 480rpx;
-    left: 50rpx;
+    left: 35rpx;
   }
   .back-btn{
     width: 150rpx;
@@ -85,6 +85,7 @@
       </view>
     </wxc-mask>
     <wxc-toast class="J_toast" text="图片已成功保存到相册"></wxc-toast>
+    <wxc-toast class="F_toast" text="由于你拒绝授权,图片不会被保存!如果要保存,请重新授权!!"></wxc-toast>
   </view>
 </template>
 
@@ -136,98 +137,55 @@
       },
       shareToFriends() {
         let self = this
-        let imgUrl = this.resultImgUrl // 图片地址
-        // wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
-        //   url: imgUrl
-        // }).then(res => {
-        //   wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
-        //     let $toast = self.$wxpage.selectComponent('.J_toast')
-        //     $toast && $toast.show()
-        //     self.maskStatus = 'hide'
-        //     self.$apply()
-        //   })
-        // })
-
         wepy.getSetting().then(res => {
           console.log(res)
           if (!res.authSetting['scope.writePhotosAlbum']) {
             wepy.authorize({scope: 'scope.writePhotosAlbum'}).then(res => {
               console.log(res)
-              wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
-                url: imgUrl
-              }).then(res => {
-                wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
-                  let $toast = self.$wxpage.selectComponent('.J_toast')
-                  $toast && $toast.show()
-                  self.maskStatus = 'hide'
-                  self.$apply()
+              console.log('授权成功')
+              self.downloadFileFn()
+            }).catch(err => {
+              console.log(err)
+              let $toast = self.$wxpage.selectComponent('.F_toast')
+              $toast && $toast.show()
+              self.maskStatus = 'hide'
+              if (err.errMsg === 'saveImageToPhotosAlbum:fail auth deny') {
+                console.log('用户一开始拒绝了，我们想要再次发起授权')
+                wepy.authorize({scope: 'scope.writePhotosAlbum'}).then(res => {
+                  console.log(res)
+                  console.log('auth success')
+                }).catch(err => {
+                  console.log(err)
+                  console.log('deny again')
                 })
-              })
+              }
+              console.log('授权失败')
+              console.log('user not allow')
             })
           } else {
-            wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
-              url: imgUrl
-            }).then(res => {
-              wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
-                let $toast = self.$wxpage.selectComponent('.J_toast')
-                $toast && $toast.show()
-                self.maskStatus = 'hide'
-                self.$apply()
-              })
-            })
+            self.downloadFileFn()
           }
         })
       },
       backIndex() {
         wepy.clearStorageSync()
-        this.$redirect('index')
+        wepy.reLaunch({url: 'index'})
       }
+    }
 
-      // shareToFriends() {
-      //   let self = this
-      //   let imgUrl = this.resultImg // 图片地址
-      //   wepy.getSetting().then(res => {
-      //     if (!res.authSetting['scope.writePhotosAlbum']) {
-      //       wepy.authorize({scope: 'scope.writePhotosAlbum'}).then(res => {
-      //         wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
-      //           url: imgUrl
-      //         }).then(res => {
-      //           wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
-      //             let $toast = self.$wxpage.selectComponent('.J_toast')
-      //             $toast && $toast.show()
-      //             self.maskStatus = 'hide'
-      //             self.$apply()
-      //           })
-      //         })
-      //       })
-      //     }
-      //   })
-
-      //   wepy.getSetting({
-      //     success: function (res) {
-      //       console.log(res)
-      //       wepy.authorize({
-      //         scope: 'scope.writePhotosAlbum',
-      //         success: function (res) {
-      //           var imgUrl = 'http://img02.tooopen.com/images/20150928/tooopen_sy_143912755726.jpg' // 图片地址
-      //           wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
-      //             url: imgUrl,
-      //             success: function (res) {
-      //               console.log(res)
-      //               // 下载成功后再保存到本地
-      //               wepy.saveImageToPhotosAlbum({
-      //                 filePath: res.tempFilePath, // 返回的临时文件路径，下载后的文件会存储到一个临时文件
-      //                 success: function(res) {
-
-      //                 }
-      //               })
-      //             }
-      //           })
-      //         }
-      //       })
-      //     }
-      //   })
-      // }
+    downloadFileFn() {
+      let self = this
+      let imgUrl = this.resultImgUrl // 图片地址
+      wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
+        url: imgUrl
+      }).then(res => {
+        wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
+          let $toast = self.$wxpage.selectComponent('.J_toast')
+          $toast && $toast.show()
+          self.maskStatus = 'hide'
+          self.$apply()
+        })
+      })
     }
 
     events = {
@@ -235,7 +193,6 @@
     }
 
     onLoad(params, data) {
-      console.log(data.preload)
       const systemInfo = wepy.getSystemInfoSync()
       this.height = systemInfo.windowHeight
       this.resultImg = data.preload.result.data_b64

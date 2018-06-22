@@ -16,10 +16,10 @@
         width: 100%;
         text-align: center;
         .gif{
-          width:308rpx;
-          height:308rpx;
+          width:300rpx;
+          height:300rpx;
           position:absolute;
-          bottom:50rpx;
+          bottom:40rpx;
           left:50%;
           transform: translateX(-60%);
         }

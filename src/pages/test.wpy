@@ -136,18 +136,15 @@
             'nickname': this.$parent.globalData.userInfo.nickName
           }
           let generateUrl = this.$parent.globalData.server_host + 'quizz/generate_url'
-          console.log(generateUrl)
           wepy.request({url: generateUrl, method: 'POST', data: postData}).then(res => {
             wepy.setStorageSync('generateUrl', res.data.url)
-          }).catch(err => {
-            console.log(err)
-          })
-          let url = this.$parent.globalData.server_host + 'quizz/post_answers'
-          wepy.request({url, method: 'POST', data: postData}).then(res => {
-            self.$preload('result', res.data)
-            wepy.removeStorageSync('subject_lists')
-            wepy.hideLoading()
-            self.$navigate('result')
+            let url = this.$parent.globalData.server_host + 'quizz/post_answers'
+            wepy.request({url, method: 'POST', data: postData}).then(res => {
+              self.$preload('result', res.data)
+              wepy.removeStorageSync('subject_lists')
+              wepy.hideLoading()
+              self.$navigate('result')
+            })
           }).catch(err => {
             console.log(err)
           })
