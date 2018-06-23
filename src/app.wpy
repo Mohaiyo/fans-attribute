@@ -40,7 +40,7 @@ export default class extends wepy.app {
 
   globalData = {
     userInfo: null,
-    server_host: 'http://120.79.241.178:9190/',
+    server_host: 'https://football-fan.infiai.tech/',
     ftp_host: 'https://yan.yanyantech.com/citypos-api/' + 'admin/upload',
     cache: {},
     innerAudioContext: null,
@@ -112,6 +112,14 @@ export default class extends wepy.app {
 
       // 请求失败后的回调函数
       fail (p) {
+        wepy.showToast({
+          title: '服务器炸了，紧急维护中...',
+          icon: 'none',
+          mask: true,
+          success: () => {
+            wepy.hideLoading()
+          }
+        })
         console.log('request fail: ', p)
         // 必须返回响应数据对象，否则后续无法对响应数据进行处理
         return p

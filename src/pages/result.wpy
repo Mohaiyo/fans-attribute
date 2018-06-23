@@ -67,6 +67,7 @@
   <view class="container">
     <view>
       <image src="{{'data:image/png;base64,' + resultImg}}" mode="aspectFill" class="resultPic" style="height:{{height + 'px'}}"></image>
+       <!-- <button open-type="openSetting" wx:if="{{false}}"></button> -->
       <image src="../assets/images/sharebtn.png" mode="aspectFill" class="Share" @tap="showMask"></image>
       <image src="../assets/images/restart.png" mode="aspectFill" class="back-img" @tap="backIndex"></image>
       <!-- <button class="back-btn" @tap="backIndex">再来一次</button> -->
@@ -85,7 +86,7 @@
       </view>
     </wxc-mask>
     <wxc-toast class="J_toast" text="图片已成功保存到相册"></wxc-toast>
-    <wxc-toast class="F_toast" text="由于你拒绝授权,图片不会被保存!如果要保存,请重新授权!!"></wxc-toast>
+    <wxc-toast class="F_toast" text="由于您拒绝授权,图片不会保存!如果保存,请打开设置重新授权!!"></wxc-toast>
   </view>
 </template>
 
@@ -141,16 +142,16 @@
           console.log(res)
           if (!res.authSetting['scope.writePhotosAlbum']) {
             wepy.authorize({scope: 'scope.writePhotosAlbum'}).then(res => {
-              console.log(res)
-              console.log('授权成功')
               self.downloadFileFn()
             }).catch(err => {
               console.log(err)
               let $toast = self.$wxpage.selectComponent('.F_toast')
               $toast && $toast.show()
               self.maskStatus = 'hide'
-              if (err.errMsg === 'saveImageToPhotosAlbum:fail auth deny') {
-                console.log('用户一开始拒绝了，我们想要再次发起授权')
+              self.$apply()
+              if (err.errMsg === 'saveImageToPhotosAlbum:fail auth deny' || err.errMsg === 'authorize:fail auth deny') {
+                console.log('user deny,try again!')
+                // no effect has to use setting button
                 wepy.authorize({scope: 'scope.writePhotosAlbum'}).then(res => {
                   console.log(res)
                   console.log('auth success')
@@ -159,8 +160,6 @@
                   console.log('deny again')
                 })
               }
-              console.log('授权失败')
-              console.log('user not allow')
             })
           } else {
             self.downloadFileFn()
@@ -176,10 +175,15 @@
     downloadFileFn() {
       let self = this
       let imgUrl = this.resultImgUrl // 图片地址
+      wepy.showLoading({
+        title: '图片保存中...',
+        mask: true
+      })
       wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
         url: imgUrl
       }).then(res => {
         wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
+          wepy.hideLoading()
           let $toast = self.$wxpage.selectComponent('.J_toast')
           $toast && $toast.show()
           self.maskStatus = 'hide'
