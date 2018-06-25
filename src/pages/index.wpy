@@ -52,10 +52,10 @@
     <view class="audio-btn" wx:if="{{audioPlay}}" @tap="pause">暂停</view> -->
     <wxc-flex class="pic-container"  dir="top" main="start" cross="center">
       <view class="pic">
-        <image src="../assets/images/indexbg.png" mode="aspectFill" style="width:100%;height:{{height + 'px'}}"></image>
+        <image src="../assets/images/indexbg.png" mode="scaleToFill" style="width:100%;height:{{height + 'px'}}"></image>
         <image src="../assets/images/indexgif.gif" class="gif"></image>
       </view>
-      <view class="btn-test">
+      <view class="btn-test" style="bottom:{{isHigh ? '440rpx' : '380rpx'}}">
         <button wx:if="{{!hasAuth}}" class="btn" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="test"></button>
         <button wx:if="{{hasAuth}}" class="btn" @tap="test"></button>
       </view>
@@ -85,7 +85,8 @@
 
     data = {
       audioPlay: true,
-      height: 0
+      height: 0,
+      isHigh: false
     }
 
     computed = {
@@ -134,20 +135,12 @@
       this.getSubjectList()
     }
     onLoad() {
-      // let self = this
-      // this.audioPlay = this.$parent.globalData.audioPlay
-      // this.$parent.getUserInfo(function (userInfo) {
-      //   if (userInfo) {
-      //     self.hasAuth = true
-      //     self.userInfo = userInfo
-      //   }
-      //   self.$apply()
-      // }, function() {
-      //   self.hasAuth = false
-      //   self.$apply()
-      // })
       const systemInfo = wepy.getSystemInfoSync()
       this.height = systemInfo.windowHeight
+      console.log(systemInfo)
+      if (systemInfo.windowHeight >= 724) {
+        this.isHigh = true
+      }
     }
   }
 </script>

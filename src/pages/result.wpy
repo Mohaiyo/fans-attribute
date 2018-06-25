@@ -66,10 +66,10 @@
 <template>
   <view class="container">
     <view>
-      <image src="{{'data:image/png;base64,' + resultImg}}" mode="aspectFill" class="resultPic" style="height:{{height + 'px'}}"></image>
+      <image src="{{'data:image/png;base64,' + resultImg}}" mode="scaleToFill" class="resultPic" style="height:{{height + 'px'}}"></image>
        <!-- <button open-type="openSetting" wx:if="{{false}}"></button> -->
-      <image src="../assets/images/sharebtn.png" mode="aspectFill" class="Share" @tap="showMask"></image>
-      <image src="../assets/images/restart.png" mode="aspectFill" class="back-img" @tap="backIndex"></image>
+      <image src="../assets/images/sharebtn.png" mode="aspectFill" class="Share" @tap="showMask" style="top:{{isHigh ? '40%': '480rpx'}}"></image>
+      <image src="../assets/images/restart.png" mode="aspectFill" class="back-img" @tap="backIndex" style="bottom:{{ isHign ? '70rpx' : '50rpx'}}"></image>
       <!-- <button class="back-btn" @tap="backIndex">再来一次</button> -->
       <!-- <wxc-button class="back-btn" @tap="backIndex"></wxc-button> -->
     </view>
@@ -111,7 +111,8 @@
       height: 0,
       maskStatus: 'hide',
       resultImg: '',
-      resultImgUrl: ''
+      resultImgUrl: '',
+      isHigh: true
     }
 
     computed = {
@@ -122,6 +123,7 @@
       onShareAppMessage(res) {
         if (res.from === 'button') {
           // 来自页面内转发按钮
+          this.maskStatus = 'hide'
           console.log(res.target)
         }
         return {
@@ -188,6 +190,11 @@
           $toast && $toast.show()
           self.maskStatus = 'hide'
           self.$apply()
+        }).catch(err => {
+          console.log(err)
+          wepy.hideLoading()
+          self.maskStatus = 'hide'
+          self.$apply()
         })
       })
     }
@@ -201,6 +208,9 @@
       this.height = systemInfo.windowHeight
       this.resultImg = data.preload.result.data_b64
       this.resultImgUrl = wepy.getStorageSync('generateUrl')
+      if (systemInfo.windowHeight >= 724) {
+        this.isHigh = true
+      }
     }
   }
 </script>

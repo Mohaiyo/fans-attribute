@@ -7,7 +7,7 @@
   .label{
     position: absolute;
     top:45rpx;
-    left:40rpx;
+    left:35rpx;
     font-family: 'HappyZcool-2016';
     font-size: 40rpx;
   }
@@ -58,9 +58,9 @@
   <view class="container">
     <view wx:for="{{subjectList}}" wx:key="{{index}}" class="innerBox" wx:if="{{index === testIndex}}" style="height:{{height + 'px'}}">
       <view class="subjectBox" style="height:{{height + 'px'}}">
-        <label class="label">{{index + 1}}/{{subjectLength}}</label>
+        <label class="label" style="top:{{ isHigh ? '60rpx' : '47rpx'}}">{{index + 1}}/{{subjectLength}}</label>
         <image src="../assets/images/test.png" style="height:{{height + 'px'}}" class="subPiC"></image>
-        <view class="descr">{{item.question}}</view>
+        <view class="descr" style="top:{{ isHigh ? '410rpx' : '320rpx'}}">{{item.question}}</view>
         <button class="btn left" @tap.prevent="navigateToResult({{item.id}},'no')"></button>
         <button class="btn right" @tap.prevent="navigateToResult({{item.id}},'yes')"></button>
       </view>
@@ -91,7 +91,8 @@
       testIndex: 0,
       subjectLength: 0,
       height: 0,
-      result: []
+      result: [],
+      isHigh: false
     }
 
     computed = {
@@ -161,6 +162,9 @@
       this.subjectLength = wepy.getStorageSync('subject_lists').length
       const systemInfo = wepy.getSystemInfoSync()
       this.height = systemInfo.windowHeight
+      if (systemInfo.windowHeight >= 724) {
+        this.isHigh = true
+      }
     }
   }
 </script>
