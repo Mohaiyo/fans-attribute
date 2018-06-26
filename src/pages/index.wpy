@@ -132,6 +132,7 @@
     }
 
     onShow() {
+      wepy.clearStorageSync()
       this.getSubjectList()
     }
     onLoad() {

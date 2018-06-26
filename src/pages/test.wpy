@@ -153,6 +153,11 @@
       }
     }
 
+    async getqrUrl () {
+      let url = this.$parent.globalData.server_host + 'wechat/get_code'
+      let qrcodeData = wepy.request(url)
+      return qrcodeData
+    }
     events = {
 
     }
@@ -165,6 +170,10 @@
       if (systemInfo.windowHeight >= 724) {
         this.isHigh = true
       }
+      this.getqrUrl().then(res => {
+        let qrcodeUrl = res.data.url
+        wepy.setStorageSync('qrcodeUrl', qrcodeUrl)
+      })
     }
   }
 </script>

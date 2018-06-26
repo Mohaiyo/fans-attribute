@@ -62,6 +62,17 @@
     bottom: 50rpx;
     left: 40rpx;
   }
+  .qr-img{
+    width: 180rpx;
+    height: 180rpx;
+    position: absolute;
+    left: 30rpx;
+  }
+  .myCanvas{
+    position: absolute;
+    top: 0rpx;
+    left: -250%;
+  }
 </style>
 <template>
   <view class="container">
@@ -70,9 +81,11 @@
        <!-- <button open-type="openSetting" wx:if="{{false}}"></button> -->
       <image src="../assets/images/sharebtn.png" mode="aspectFill" class="Share" @tap="showMask" style="top:{{isHigh ? '40%': '480rpx'}}"></image>
       <image src="../assets/images/restart.png" mode="aspectFill" class="back-img" @tap="backIndex" style="bottom:{{ isHign ? '70rpx' : '50rpx'}}"></image>
+      <image src="{{qrcodeUrl}}" mode="aspectFill" class="qr-img" style="bottom:{{ isHign ? '200rpx' : '170rpx'}}"></image>
       <!-- <button class="back-btn" @tap="backIndex">再来一次</button> -->
       <!-- <wxc-button class="back-btn" @tap="backIndex"></wxc-button> -->
     </view>
+    <canvas class="myCanvas" canvas-id="myCanvas" style="height:{{2 * height + 'px'}};width:{{2* width + 'px'}}"/>
     <wxc-mask status="{{maskStatus}}" content-align="bl" bind:masktap="maskTap">
       <view class="mask-demo_content">
         <button open-type="share"  class="share-btn">
@@ -109,10 +122,12 @@
 
     data = {
       height: 0,
+      width: 0,
       maskStatus: 'hide',
       resultImg: '',
       resultImgUrl: '',
-      isHigh: true
+      isHigh: true,
+      qrcodeUrl: ''
     }
 
     computed = {
@@ -127,7 +142,7 @@
           console.log(res.target)
         }
         return {
-          title: '史上最搞笑球迷分类大全，准到想嫁给小编！！',
+          title: '史上最搞笑球迷分类大全,准到想嫁给小编!!',
           path: '/pages/index',
           imageUrl: this.resultImgUrl
         }
@@ -174,29 +189,54 @@
       }
     }
 
-    downloadFileFn() {
-      let self = this
-      let imgUrl = this.resultImgUrl // 图片地址
+    async downloadFileFn() {
       wepy.showLoading({
         title: '图片保存中...',
         mask: true
       })
-      wepy.downloadFile({ // 下载文件资源到本地，客户端直接发起一个 HTTP GET 请求，返回文件的本地临时路径
-        url: imgUrl
-      }).then(res => {
-        wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
-          wepy.hideLoading()
-          let $toast = self.$wxpage.selectComponent('.J_toast')
-          $toast && $toast.show()
-          self.maskStatus = 'hide'
-          self.$apply()
+      let qrLeft = this.width * 0.08
+      let qrTop = this.height * 1.4
+      let qrwidth = this.width * 0.48
+      let canvasWidth = this.width * 2
+      let canvasHeight = this.height * 2
+      const ctx = wepy.createCanvasContext('myCanvas')
+      let qrcodeUrl = this.qrcodeUrl
+      let imgUrl = this.resultImgUrl // 图片地址
+      let qrcodeInfo = await wepy.getImageInfo({src: qrcodeUrl})
+      let resultImgInfo = await wepy.getImageInfo({src: imgUrl})
+      ctx.drawImage(resultImgInfo.path, 0, 0, canvasWidth, canvasHeight)
+      ctx.drawImage(qrcodeInfo.path, qrLeft, qrTop, qrwidth, qrwidth)
+      let self = this
+      let saveImg = () => {
+        wepy.canvasToTempFilePath({
+          x: 0,
+          y: 0,
+          width: canvasWidth,
+          height: canvasHeight,
+          destWidth: canvasWidth,
+          destHeight: canvasHeight,
+          canvasId: 'myCanvas'
+        }).then(res => {
+          wepy.saveImageToPhotosAlbum({filePath: res.tempFilePath}).then(res => {
+            wepy.hideLoading()
+            let $toast = self.$wxpage.selectComponent('.J_toast')
+            $toast && $toast.show()
+            self.maskStatus = 'hide'
+            self.$apply()
+          }).catch(err => {
+            console.log(err)
+            wepy.hideLoading()
+            self.maskStatus = 'hide'
+            self.$apply()
+          })
         }).catch(err => {
           console.log(err)
           wepy.hideLoading()
           self.maskStatus = 'hide'
           self.$apply()
         })
-      })
+      }
+      ctx.draw(true, saveImg)
     }
 
     events = {
@@ -206,8 +246,10 @@
     onLoad(params, data) {
       const systemInfo = wepy.getSystemInfoSync()
       this.height = systemInfo.windowHeight
+      this.width = systemInfo.windowWidth
       this.resultImg = data.preload.result.data_b64
       this.resultImgUrl = wepy.getStorageSync('generateUrl')
+      this.qrcodeUrl = wepy.getStorageSync('qrcodeUrl')
       if (systemInfo.windowHeight >= 724) {
         this.isHigh = true
       }
