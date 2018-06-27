@@ -78,12 +78,9 @@
   <view class="container">
     <view>
       <image src="{{'data:image/png;base64,' + resultImg}}" mode="scaleToFill" class="resultPic" style="height:{{height + 'px'}}"></image>
-       <!-- <button open-type="openSetting" wx:if="{{false}}"></button> -->
       <image src="../assets/images/sharebtn.png" mode="aspectFill" class="Share" @tap="showMask" style="top:{{isHigh ? '40%': '480rpx'}}"></image>
       <image src="../assets/images/restart.png" mode="aspectFill" class="back-img" @tap="backIndex" style="bottom:{{ isHign ? '70rpx' : '50rpx'}}"></image>
-      <image src="{{qrcodeUrl}}" mode="aspectFill" class="qr-img" style="bottom:{{ isHign ? '200rpx' : '170rpx'}}"></image>
-      <!-- <button class="back-btn" @tap="backIndex">再来一次</button> -->
-      <!-- <wxc-button class="back-btn" @tap="backIndex"></wxc-button> -->
+      <!-- <image src="{{qrcodeUrl}}" mode="aspectFill" class="qr-img" style="bottom:{{ isHign ? '200rpx' : '170rpx'}}"></image> -->
     </view>
     <canvas class="myCanvas" canvas-id="myCanvas" style="height:{{2 * height + 'px'}};width:{{2* width + 'px'}}"/>
     <wxc-mask status="{{maskStatus}}" content-align="bl" bind:masktap="maskTap">
